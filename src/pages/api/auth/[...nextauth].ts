@@ -2,8 +2,6 @@ import axios from "axios";
 import NextAuth, { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 
-// import Users from '@/models/Users'
-
 export const authOptions: NextAuthOptions = {
   secret: process.env.SECRET,
   providers: [
@@ -15,7 +13,7 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async signIn({ user }): Promise<boolean | string> {
       try {
-        axios.post(`http://localhost:3001/api/user`, {
+        axios.post(`http://localhost:3001/user`, {
           user_id: user.id,
           username: user.name,
           image: user.image,
@@ -26,6 +24,21 @@ export const authOptions: NextAuthOptions = {
         console.log(error);
       }
     },
+    session: async ({ session, token }: any) => {
+      if (session?.user) {
+        session.user.id = token.uid;
+      }
+      return session;
+    },
+    jwt: async ({ user, token }) => {
+      if (user) {
+        token.uid = user.id;
+      }
+      return token;
+    },
+  },
+  session: {
+    strategy: "jwt",
   },
 };
 

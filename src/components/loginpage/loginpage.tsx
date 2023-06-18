@@ -11,9 +11,7 @@ const Loginpage = () => {
   const router = useRouter();
 
   const handleSignup = async () => {
-    await signIn("google", {
-      // callbackUrl: "http://localgost:3000/home",
-    });
+    await signIn("google");
   };
 
   return (

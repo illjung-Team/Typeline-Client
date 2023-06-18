@@ -12,10 +12,10 @@ const Plan: any = ({ data }) => {
   const { deleteData } = useDataStore();
 
   const {
-    value: content,
+    value: memo,
     setinputValue: setContentValue,
     reset: resetContent,
-  } = useInput(data.content);
+  } = useInput(data.memo);
 
   const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -37,7 +37,7 @@ const Plan: any = ({ data }) => {
             id="input"
             className="contents"
             type="text"
-            value={content}
+            value={memo}
             onChange={setContentValue}
           />
         </form>
@@ -48,7 +48,7 @@ const Plan: any = ({ data }) => {
             setEdit(true);
           }}
         >
-          {data.content}
+          {data.memo}
         </div>
       )}
 

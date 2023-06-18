@@ -1,25 +1,61 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Head from "next/head";
 import styled from "styled-components";
-import { useDayStore } from "../store/login";
+import { useDayStore } from "../store/currentday";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import useInput from "../hooks/useInput";
-import { useState } from "react";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import Plan from "../components/main/plan";
 import { v4 as uuidv4 } from "uuid";
 import { useDataStore } from "../store/userdata";
+import { useIdStore } from "../store/userid";
+import axios from "axios";
+import useSWR, { mutate } from "swr";
+import { useSession } from "next-auth/react";
+import useSWRMutation from "swr/mutation";
 
 function Home() {
-  const { selectedDay, dayChange } = useDayStore();
-  const { userdata, addData, deleteData } = useDataStore();
+  const { selectedDay, getdayparams } = useDayStore();
   const weekdays = ["일", "월", "화", "수", "목", "금", "토"];
+  const { data: session }: any = useSession();
+
+  const getdayfetcher = (url, body, params) =>
+    axios.get(url, { params, data: body }).then((res) => res.data);
+
+  const getmonthfetcher = (url) => {
+    axios.get(url).then((res) => res.data);
+  };
+
+  const {
+    data: dateData,
+    error: dateDataError,
+    isLoading: dateDataIsLoading,
+    mutate: datemutate,
+  } = useSWR(`http://localhost:3001/schedule/day`, (url) =>
+    getdayfetcher(
+      url,
+      {
+        user_id: session.user.id,
+      },
+      getdayparams()
+    )
+  );
+
+  const { trigger } = useSWRMutation(
+    `http://localhost:3001/schedule/month`,
+    getmonthfetcher
+  );
 
   const {
     value: content,
     setinputValue: setContentValue,
     reset: resetContent,
   } = useInput("");
+
+  const postfetcher = async (body) =>
+    axios.post(`http://localhost:3001/schedule`, body).then((res) => {
+      console.log(res.data);
+    });
 
   function focusInput() {
     var inputElement = document.getElementById("input");
@@ -28,30 +64,25 @@ function Home() {
 
   const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    onAdd();
+  };
+
+  const onAdd = async () => {
     if (content === "") {
       return;
     }
-    addData({
-      id: uuidv4(),
-      content,
+    await postfetcher({
+      ...getdayparams(),
+      user_id: session.user.id,
+      memo: content,
     });
+    datemutate();
+    trigger();
     resetContent();
     focusInput();
   };
 
-  const onAdd = () => {
-    if (content === "") {
-      return;
-    }
-    addData({
-      id: uuidv4(),
-      content,
-    });
-    resetContent();
-    focusInput();
-  };
-
-  const PlanList = userdata.map((e) => <Plan data={e}></Plan>);
+  const PlanList = dateData?.map((e, i) => <Plan data={e} key={i}></Plan>);
 
   return (
     <React.Fragment>
@@ -61,8 +92,7 @@ function Home() {
       <DateinfoWrap>
         <Title>
           <p>
-            {selectedDay.getFullYear()}년 {selectedDay.getMonth() + 1}월{" "}
-            {selectedDay.getDate()}일
+            {getdayparams().yyyy}년 {getdayparams().mm}월 {getdayparams().dd}일
           </p>
           <span>│{weekdays[selectedDay.getDay()]}요일</span>
         </Title>

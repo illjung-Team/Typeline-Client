@@ -7,6 +7,8 @@ import { useSession } from "next-auth/react";
 const Layout = ({ children }: any) => {
   const { data: session, status }: any = useSession();
 
+  console.log(session);
+
   return (
     <>
       <Header></Header>
@@ -30,5 +32,5 @@ const LayoutWrap = styled.div`
   grid-template-columns: 480px 374px;
   grid-template-rows: 480px;
   overflow: hidden;
-  border: 1px solid #333333;
+  /* border: 1px solid #333333; */
 `;

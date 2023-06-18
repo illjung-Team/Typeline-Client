@@ -3,34 +3,44 @@ import styled from "styled-components";
 import Calendar from "react-calendar";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
-import { useDayStore } from "../../store/login";
+import { useDayStore } from "../../store/currentday";
 import { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import useSWR from "swr";
+import useSWR, { mutate } from "swr";
 import axios from "axios";
+import useSWRMutation from "swr/mutation";
 
 const Calendarbox: any = () => {
-  const fetcher = (url, params) =>
-    axios.get(url, { params }).then((res) => {
-      return res.data;
-    });
+  const { data: session }: any = useSession();
+  const { selectedDay, dayChange, getmonthparams } = useDayStore();
+  const router = useRouter();
+
+  const getmonthfetcher = (url, body, params) =>
+    axios.get(url, { params, data: body }).then((res) => res.data);
 
   const {
     data: monthData,
     error: monthDataError,
     isLoading: monthDataIsLoading,
-  } = useSWR(`http://localhost:3001/api/schedule/month`, (url) =>
-    fetcher(url, {
-      yyyy: String(selectedDay.getFullYear()),
-      mm: String(selectedDay.getMonth()),
-    })
+  } = useSWR(`http://localhost:3001/schedule/month`, (url) =>
+    getmonthfetcher(
+      url,
+      {
+        user_id: session.user.id,
+      },
+      getmonthparams()
+    )
   );
 
-  // console.log(monthData);
+  const getdayfetcher = (url) => {
+    axios.get(url).then((res) => res.data);
+  };
+  //이거 왜 됨? ㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋ
 
-  const { data: session }: any = useSession();
-  const { selectedDay, dayChange } = useDayStore();
-  const router = useRouter();
+  const { trigger } = useSWRMutation(
+    `http://localhost:3001/schedule/day`,
+    getdayfetcher
+  );
 
   const formatShortWeekday = (locale, date) => {
     const weekdays = ["일", "월", "화", "수", "목", "금", "토"];
@@ -65,17 +75,38 @@ const Calendarbox: any = () => {
       : `${date.getDate()}`;
   };
 
-  const tileContent = ({ date, view }) => {
-    return <Planlist>• 일정텍스트</Planlist>;
+  const tileContent: any = ({ date, view }) => {
+    const tileinfo = () => {
+      return {
+        yyyy: String(date.getFullYear()),
+        mm: String(date.getMonth() + 1),
+        dd: String(date.getDate()),
+      };
+    };
+    const List = monthData?.map((e) => {
+      if (
+        tileinfo().yyyy == e.yyyy &&
+        tileinfo().mm == e.mm &&
+        tileinfo().dd == e.dd
+      ) {
+        return <Planlist>• {e.memo}</Planlist>;
+      }
+    });
+
+    return <PlanlistWrap>{List}</PlanlistWrap>;
   };
 
   const onClickDay = (date: Date) => {
     dayChange(date);
+    trigger();
     router.push("/");
   };
+
   const goToday: any = (date: Date) => {
     dayChange(new Date());
   };
+
+  console.log(monthData);
 
   return (
     <CalendarWrap>
@@ -106,7 +137,8 @@ const CalendarWrap = styled.div`
   width: 100%;
   height: 100%;
   background: #f8f8f8;
-  border-bottom: 1px solid #dddddd;
+  box-sizing: border-box;
+  border-right: 1px solid #bbbbbb;
   .react-calendar__navigation__next2-button {
     display: none;
   }
@@ -204,12 +236,19 @@ const Weekendtile = styled.div`
   -webkit-app-region: drag;
 `;
 
+const PlanlistWrap = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  color: #666666;
+  font-size: 10px;
+  overflow: hidden;
+`;
 const Planlist = styled.div`
-  margin-top: auto;
-  height: 32px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  margin-left: 4px;
   color: #666666;
   font-size: 10px;
 `;
