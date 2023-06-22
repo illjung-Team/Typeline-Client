@@ -5,9 +5,20 @@ import { useSession } from "next-auth/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import { signOut } from "next-auth/react";
+import api from "../../axios";
 
 function Home() {
   const { data: session }: any = useSession();
+
+  const deleteUser = async () => {
+    await api
+      .delete("user", {
+        data: {
+          user_id: session.user.id,
+        },
+      })
+      .then((res) => res.data);
+  };
 
   return (
     <React.Fragment>
@@ -33,7 +44,13 @@ function Home() {
             <FontAwesomeIcon icon={faArrowRight} />
             <span>로그아웃</span>
           </AuthButton>
-          <AuthButton color="#EA0000">
+          <AuthButton
+            color="#EA0000"
+            onClick={() => {
+              deleteUser();
+              signOut();
+            }}
+          >
             <FontAwesomeIcon icon={faArrowRight} />
             <span>
               <p>회원탈퇴</p>
@@ -47,16 +64,17 @@ function Home() {
 
 const ProfileWrap = styled.div`
   display: flex;
-  padding: 30px 16px;
+  padding: 32px 16px 28px;
   flex-direction: column;
 `;
 const Title = styled.div`
   font-weight: 600;
   font-size: 24px;
   color: #333333;
-  margin-bottom: 25px;
+  margin-bottom: 30px;
 `;
 const InFo = styled.div`
+  margin-top: 4px;
   padding: 8px 4px;
   display: flex;
   flex-direction: row;
@@ -86,13 +104,14 @@ const ButtonArea = styled.div`
 `;
 const AuthButton = styled.button`
   color: ${({ color }) => color};
-  padding: 4px;
+  padding: 6px 8px;
   font-weight: 600;
   font-size: 16px;
   display: flex;
   flex-direction: row;
   align-items: center;
   transition: all 0.1s;
+  border-radius: 4px;
   &:hover {
     background-color: #dddddd;
   }

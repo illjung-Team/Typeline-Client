@@ -129,3 +129,8 @@ button {
   background: none;
   cursor: pointer;
 }
+body {
+  box-shadow: none;
+  border: none;
+  outline: none;
+}

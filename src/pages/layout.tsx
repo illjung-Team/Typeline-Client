@@ -7,8 +7,6 @@ import { useSession } from "next-auth/react";
 const Layout = ({ children }: any) => {
   const { data: session, status }: any = useSession();
 
-  console.log(session);
-
   return (
     <>
       <Header></Header>

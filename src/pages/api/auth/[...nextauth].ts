@@ -1,6 +1,8 @@
 import axios from "axios";
 import NextAuth, { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
+import { useRouter } from "next/router";
+import api from "../../../axios";
 
 export const authOptions: NextAuthOptions = {
   secret: process.env.SECRET,
@@ -13,7 +15,7 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async signIn({ user }): Promise<boolean | string> {
       try {
-        axios.post(`http://localhost:3001/user`, {
+        api.post(`user`, {
           user_id: user.id,
           username: user.name,
           image: user.image,

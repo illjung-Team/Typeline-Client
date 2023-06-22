@@ -1,29 +1,40 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Head from "next/head";
 import styled from "styled-components";
 import { useDayStore } from "../store/currentday";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import useInput from "../hooks/useInput";
-import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { fa0, faPlus } from "@fortawesome/free-solid-svg-icons";
 import Plan from "../components/main/plan";
-import { v4 as uuidv4 } from "uuid";
-import { useDataStore } from "../store/userdata";
-import { useIdStore } from "../store/userid";
-import axios from "axios";
 import useSWR, { mutate } from "swr";
 import { useSession } from "next-auth/react";
 import useSWRMutation from "swr/mutation";
+import api from "../axios";
 
 function Home() {
   const { selectedDay, getdayparams } = useDayStore();
   const weekdays = ["일", "월", "화", "수", "목", "금", "토"];
   const { data: session }: any = useSession();
+  const [add, setAdd] = useState(true);
+  const inputRef = useRef(null);
 
-  const getdayfetcher = (url, body, params) =>
-    axios.get(url, { params, data: body }).then((res) => res.data);
+  const focusInput = () => {
+    inputRef.current.focus();
+  };
+
+  const getdayfetcher = (url) =>
+    api
+      .get(url, {
+        params: getdayparams(),
+        data: {
+          user_id: session.user.id,
+        },
+      })
+      .then((res: any) => res.data)
+      .catch((error) => error.response.status === 404 && []);
 
   const getmonthfetcher = (url) => {
-    axios.get(url).then((res) => res.data);
+    api.get(url).then((res) => res.data);
   };
 
   const {
@@ -31,18 +42,10 @@ function Home() {
     error: dateDataError,
     isLoading: dateDataIsLoading,
     mutate: datemutate,
-  } = useSWR(`http://localhost:3001/schedule/day`, (url) =>
-    getdayfetcher(
-      url,
-      {
-        user_id: session.user.id,
-      },
-      getdayparams()
-    )
-  );
+  } = useSWR(`schedule/day`, getdayfetcher);
 
-  const { trigger } = useSWRMutation(
-    `http://localhost:3001/schedule/month`,
+  const { trigger: monthmutate } = useSWRMutation(
+    `schedule/month`,
     getmonthfetcher
   );
 
@@ -53,14 +56,9 @@ function Home() {
   } = useInput("");
 
   const postfetcher = async (body) =>
-    axios.post(`http://localhost:3001/schedule`, body).then((res) => {
+    api.post(`schedule`, body).then((res) => {
       console.log(res.data);
     });
-
-  function focusInput() {
-    var inputElement = document.getElementById("input");
-    inputElement.focus();
-  }
 
   const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -74,15 +72,27 @@ function Home() {
     await postfetcher({
       ...getdayparams(),
       user_id: session.user.id,
-      memo: content,
+      memo: content.replace(/\n/g, "<br>"),
     });
     datemutate();
-    trigger();
+    monthmutate();
     resetContent();
     focusInput();
   };
 
-  const PlanList = dateData?.map((e, i) => <Plan data={e} key={i}></Plan>);
+  const PlanList = dateData?.map((e, i, m) => (
+    <Plan
+      data={e}
+      key={i}
+      nextid={m[i + 1]?.schedule_id}
+      previd={m[i - 1]?.schedule_id}
+      datemutate={datemutate}
+      monthmutate={monthmutate}
+      setAdd={setAdd}
+      add={add}
+      focusInput={focusInput}
+    ></Plan>
+  ));
 
   return (
     <React.Fragment>
@@ -96,28 +106,33 @@ function Home() {
           </p>
           <span>│{weekdays[selectedDay.getDay()]}요일</span>
         </Title>
-        {PlanList}
-        <PlanInputWrap>
-          <div className="icon">•</div>
-          <form onSubmit={onSubmit}>
-            <input
-              id="input"
-              className="contents"
-              type="text"
-              placeholder="내용을 입력하세요"
-              value={content}
-              onChange={setContentValue}
-            />
-          </form>
-        </PlanInputWrap>
-        {content && (
-          <PlanPlusWrap color="#AAAAAA" onClick={onAdd}>
-            <div className="icon">
-              <FontAwesomeIcon icon={faPlus} />
-            </div>
-            일정 텍스트
-          </PlanPlusWrap>
-        )}
+        <ScrollArea>
+          {PlanList}
+          {add && (
+            <PlanInputWrap add={add}>
+              <div className="dot">•</div>
+              <form onSubmit={onSubmit}>
+                <input
+                  id="input"
+                  ref={inputRef}
+                  className="contents"
+                  type="text"
+                  placeholder="내용을 입력하세요"
+                  value={content}
+                  onChange={setContentValue}
+                />
+              </form>
+            </PlanInputWrap>
+          )}
+          {content && (
+            <PlanPlusWrap color="#AAAAAA" onClick={onAdd}>
+              <div className="icon">
+                <FontAwesomeIcon icon={faPlus} />
+              </div>
+              일정 텍스트
+            </PlanPlusWrap>
+          )}
+        </ScrollArea>
       </DateinfoWrap>
     </React.Fragment>
   );
@@ -125,21 +140,41 @@ function Home() {
 
 const DateinfoWrap = styled.div`
   display: flex;
-  padding: 30px 16px;
+  padding: 30px 2px 0 16px;
   flex-direction: column;
+`;
+const ScrollArea = styled.div`
+  display: flex;
+  flex-direction: column;
+  height: 370px;
   overflow: scroll;
 `;
-const PlanInputWrap = styled.div`
+const PlanInputWrap = styled.div<any>`
+  /* display: ${({ add }) => (add ? "flex" : "none")}; */
   display: flex;
-  padding: 4px 4px;
   flex-direction: row;
   color: ${({ color }) => color};
+  padding: 4px;
   .icon {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    position: relative;
+    bottom: 3px;
+    font-size: 36px;
+    justify-content: center;
+    align-items: center;
+  }
+  .dot {
+    position: relative;
+    bottom: 2px;
+    font-size: 36px;
     width: 24px;
     height: 24px;
     display: flex;
     justify-content: center;
     align-items: center;
+    color: #aaaaaa;
   }
   form {
     display: flex;
@@ -147,6 +182,7 @@ const PlanInputWrap = styled.div`
   }
   input {
     flex: 1;
+    margin-bottom: 2px;
   }
 `;
 const PlanPlusWrap = styled.div`

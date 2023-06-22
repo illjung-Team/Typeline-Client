@@ -41,7 +41,7 @@ section::-webkit-scrollbar {
 
 section::-webkit-scrollbar-thumb {
   border-radius: 10px;
-  background-color: #464646;
+  background-color: #666666;
 }
 
 ul::-webkit-scrollbar {
@@ -51,7 +51,7 @@ ul::-webkit-scrollbar {
 
 ul::-webkit-scrollbar-thumb {
   border-radius: 10px;
-  background-color: #464646;
+  background-color: #666666;
 }
 
 div::-webkit-scrollbar {
@@ -61,7 +61,7 @@ div::-webkit-scrollbar {
 
 div::-webkit-scrollbar-thumb {
   border-radius: 10px;
-  background-color: #464646;
+  background-color: #666666;
 }
 
 /* Loading spinner */
@@ -107,12 +107,21 @@ input {
 input:focus {
   outline: none;
 }
+div:focus {
+  outline: none;
+}
 
 select {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
   border: none;
+}
+
+input,
+textarea,
+select {
+  font-family: inherit;
 }
 
 @keyframes spinner {

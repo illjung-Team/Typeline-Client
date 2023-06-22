@@ -4,7 +4,6 @@ interface IWindowState {
   selectedDay: Date;
   dayChange: (date: Date) => void;
   getdayparams: any;
-  getmonthparams: any;
 }
 
 export const useDayStore = create<IWindowState>((set, get) => ({
@@ -16,13 +15,6 @@ export const useDayStore = create<IWindowState>((set, get) => ({
       yyyy: String(selectedDay.getFullYear()),
       mm: String(selectedDay.getMonth() + 1),
       dd: String(selectedDay.getDate()),
-    };
-  },
-  getmonthparams: () => {
-    const selectedDay = get().selectedDay;
-    return {
-      yyyy: String(selectedDay.getFullYear()),
-      mm: String(selectedDay.getMonth() + 1),
     };
   },
 }));

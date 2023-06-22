@@ -1,50 +1,83 @@
-import React from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 import Calendar from "react-calendar";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useDayStore } from "../../store/currentday";
-import { useState, useEffect } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import useSWR, { mutate } from "swr";
-import axios from "axios";
+import { useMonthStore } from "../../store/currentmonth";
+import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faAngleRight,
+  faAngleLeft,
+  faSortDown,
+} from "@fortawesome/free-solid-svg-icons";
+import api from "../../axios";
 
 const Calendarbox: any = () => {
   const { data: session }: any = useSession();
-  const { selectedDay, dayChange, getmonthparams } = useDayStore();
+  const { selectedDay, dayChange } = useDayStore();
+  const { monthChange, getmonthparams } = useMonthStore();
+  const [view, setView] = useState("month");
   const router = useRouter();
 
-  const getmonthfetcher = (url, body, params) =>
-    axios.get(url, { params, data: body }).then((res) => res.data);
+  function focusInput() {
+    let inputElement = document.getElementById("input");
+    inputElement?.focus();
+  }
+
+  const getmonthfetcher = (url) =>
+    api
+      .get(url, {
+        params: getmonthparams(),
+        data: {
+          user_id: session.user.id,
+        },
+      })
+      .then((res) => res.data)
+      .catch((error) => error.response.status === 404 && []);
+
+  const getdayfetcher = async (url) =>
+    await api.get(url).then((res) => res.data);
 
   const {
     data: monthData,
     error: monthDataError,
     isLoading: monthDataIsLoading,
-  } = useSWR(`http://localhost:3001/schedule/month`, (url) =>
-    getmonthfetcher(
-      url,
-      {
-        user_id: session.user.id,
-      },
-      getmonthparams()
-    )
-  );
+    mutate: monthmutate,
+  } = useSWR(`schedule/month`, getmonthfetcher);
 
-  const getdayfetcher = (url) => {
-    axios.get(url).then((res) => res.data);
+  const { trigger: daymutate } = useSWRMutation(`schedule/day`, getdayfetcher);
+
+  const onActiveStartDateChange = (data) => {
+    monthChange(data.activeStartDate);
+    monthmutate();
   };
-  //이거 왜 됨? ㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋ
 
-  const { trigger } = useSWRMutation(
-    `http://localhost:3001/schedule/day`,
-    getdayfetcher
-  );
+  const onViewChange = (data) => {
+    setView(data.view);
+  };
 
-  const formatShortWeekday = (locale, date) => {
-    const weekdays = ["일", "월", "화", "수", "목", "금", "토"];
-    return weekdays[date.getDay()];
+  const navigationLabel = ({ date, label, locale, view }) => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    switch (view) {
+      case "month":
+        return (
+          <Label>
+            {`${year}년 ${month + 1}월`}
+            <Drop icon={faSortDown}></Drop>
+          </Label>
+        );
+      case "year":
+        return <Label>{`${year}년`}</Label>;
+      case "decade":
+        return <Label>{`${Math.floor(year / 10) * 10}년대`}</Label>;
+      case "century":
+        return <Label>{`${Math.floor(year / 100) + 1}세기`}</Label>;
+    }
+    return <div>1</div>;
   };
 
   const formatDay: any = (locale, date) => {
@@ -70,9 +103,13 @@ const Calendarbox: any = () => {
         </Weekendtile>
       );
     }
-    return date.getDate() === 1
-      ? `${date.getMonth() + 1}월 ${date.getDate()}일`
-      : `${date.getDate()}`;
+    return (
+      <Weekdaytile>
+        {date.getDate() === 1
+          ? `${date.getMonth() + 1}월 ${date.getDate()}일`
+          : `${date.getDate()}`}
+      </Weekdaytile>
+    );
   };
 
   const tileContent: any = ({ date, view }) => {
@@ -89,34 +126,53 @@ const Calendarbox: any = () => {
         tileinfo().mm == e.mm &&
         tileinfo().dd == e.dd
       ) {
-        return <Planlist>• {e.memo}</Planlist>;
+        return (
+          <Planlist>
+            <p>•</p> <span>{e.memo}</span>
+          </Planlist>
+        );
       }
     });
-
-    return <PlanlistWrap>{List}</PlanlistWrap>;
+    if (view === "month") {
+      return (
+        <PlanlistWrap>
+          <div>{List}</div>
+        </PlanlistWrap>
+      );
+    }
   };
 
   const onClickDay = (date: Date) => {
     dayChange(date);
-    trigger();
+    daymutate();
+    focusInput();
     router.push("/");
   };
 
   const goToday: any = (date: Date) => {
     dayChange(new Date());
+    daymutate();
+    router.push("/");
   };
-
-  console.log(monthData);
 
   return (
     <CalendarWrap>
       <Calendar
-        value={selectedDay}
-        formatShortWeekday={formatShortWeekday}
+        // formatShortWeekday={formatShortWeekday}
+        defaultValue={selectedDay}
+        // activeStartDate={new Date()}
+        navigationLabel={navigationLabel}
         formatDay={formatDay}
+        // formatMonthYear={formatMonthYear}
+        // formatLongDate={formatLongDate}
         showFixedNumberOfWeeks={true}
         tileContent={tileContent}
         onClickDay={onClickDay}
+        onActiveStartDateChange={onActiveStartDateChange}
+        nextLabel={<Next icon={faAngleRight} />}
+        prevLabel={<Prev icon={faAngleLeft} />}
+        onViewChange={onViewChange}
+        calendarType={"US"}
       ></Calendar>
       <Gotodaybutton onClick={goToday}>오늘</Gotodaybutton>
       <UserImg
@@ -155,7 +211,7 @@ const CalendarWrap = styled.div`
     background: white;
     width: 60px;
     height: 60px;
-    border-width: 0px 1px 1px 0px;
+    border-width: 0px 0px 1px 1px;
     border-style: solid;
     border-color: #dddddd;
     background: #f8f8f8;
@@ -167,6 +223,15 @@ const CalendarWrap = styled.div`
   }
   .react-calendar__month-view__weekdays {
     border-bottom: 2px solid #dddddd;
+  }
+  .react-calendar__year-view {
+    border-top: 2px solid #dddddd;
+  }
+  .react-calendar__decade-view__years {
+    border-top: 2px solid #dddddd;
+  }
+  .react-calendar__century-view__decades {
+    border-top: 2px solid #dddddd;
   }
   .react-calendar__month-view__weekdays__weekday {
     display: flex;
@@ -187,20 +252,39 @@ const CalendarWrap = styled.div`
     font-weight: 600;
     font-size: 32px;
   }
-  /* .react-calendar__navigation__label {
-    width: 180px;
-  } */
   .react-calendar__navigation {
     display: flex;
     justify-content: center;
     align-items: center;
     flex-direction: row;
-    width: 270px;
-    margin-left: 32px;
+    width: 316px;
+    margin-left: 12px;
   }
-  .react-calendar__navigation__arrow {
+  .react-calendar__navigation__next-button {
     cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     font-size: 28px;
+    width: 45px;
+    height: 45px;
+    border-radius: 4px;
+    &:hover {
+      background-color: #dddddd;
+    }
+  }
+  .react-calendar__navigation__prev-button {
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 28px;
+    width: 45px;
+    height: 45px;
+    border-radius: 4px;
+    &:hover {
+      background-color: #dddddd;
+    }
   }
   .react-calendar {
     display: flex;
@@ -208,7 +292,12 @@ const CalendarWrap = styled.div`
     padding-top: 24px;
   }
   .react-calendar__viewContainer {
+    /* position: absolute;
+    bottom: 0; */
     margin-top: auto;
+  }
+  .react-calendar__month-view {
+    /* margin-top: auto; */
   }
   .react-calendar__month-view__days__day--neighboringMonth {
     color: #bbbbbb;
@@ -219,38 +308,100 @@ const CalendarWrap = styled.div`
       color: #bbbbbb;
     }
   }
+  .react-calendar__year-view__months {
+    /* height: 390px; */
+  }
+  .react-calendar__year-view__months__month {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 97px;
+    font-size: 24px;
+  }
+  .react-calendar__decade-view__years__year {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 97px;
+    font-size: 24px;
+  }
+  .react-calendar__century-view__decades__decade {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 97px;
+    font-size: 24px;
+  }
+  .react-calendar__decade-view__years {
+    background-color: #dddddd;
+  }
+  .react-calendar__century-view__decades {
+    background-color: #dddddd;
+  }
+  .react-calendar__year-view__months {
+  }
 `;
 
 const Todaytile = styled.div`
   display: flex;
-  padding: 0 4px;
+  padding: 2px 4px;
   justify-content: center;
   align-items: center;
   color: white;
-  height: 23px;
-  background: #666666;
   border-radius: 4px;
+  background: #666666;
 `;
 const Weekendtile = styled.div`
   color: #ea0000;
-  -webkit-app-region: drag;
+  padding: 2px 4px;
+`;
+const Label = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+const Weekdaytile = styled.div`
+  padding: 2px 4px;
+`;
+const Next = styled(FontAwesomeIcon)``;
+const Prev = styled(FontAwesomeIcon)``;
+const Drop = styled(FontAwesomeIcon)`
+  margin-left: 8px;
+  margin-bottom: 12px;
+  font-size: 20px;
 `;
 
 const PlanlistWrap = styled.div`
+  height: 30px;
   width: 100%;
   display: flex;
   flex-direction: column;
-  color: #666666;
+  color: #443b3b;
   font-size: 10px;
   overflow: hidden;
+  white-space: nowrap;
+  div {
+    flex: 1;
+  }
 `;
 const Planlist = styled.div`
+  height: 15px;
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  flex-direction: row;
+  align-items: center;
   margin-left: 4px;
   color: #666666;
   font-size: 10px;
+  span {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    max-width: 60px;
+  }
+  p {
+    font-size: 16px;
+    margin-bottom: 2px;
+  }
 `;
 
 const Gotodaybutton = styled.button`
