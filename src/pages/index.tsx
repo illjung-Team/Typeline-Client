@@ -18,10 +18,6 @@ function Home() {
   const [add, setAdd] = useState(true);
   const inputRef = useRef(null);
 
-  const focusInput = () => {
-    inputRef.current.focus();
-  };
-
   const getdayfetcher = (url) =>
     api
       .get(url, {
@@ -60,6 +56,25 @@ function Home() {
       console.log(res.data);
     });
 
+  const focusInput = () => {
+    inputRef.current.focus();
+  };
+
+  function focusEndOfDiv(elementId) {
+    const element: HTMLElement = document.getElementById(elementId);
+    if (element) {
+      element?.focus();
+      const selection = window.getSelection();
+      const newRange = document.createRange();
+      newRange.selectNodeContents(element);
+      newRange.collapse(false);
+      selection?.removeAllRanges();
+      selection?.addRange(newRange);
+    } else {
+      focusInput();
+    }
+  }
+
   const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     onAdd();
@@ -72,12 +87,27 @@ function Home() {
     await postfetcher({
       ...getdayparams(),
       user_id: session.user.id,
-      memo: content.replace(/\n/g, "<br>"),
+      memo: content,
     });
     datemutate();
     monthmutate();
     resetContent();
     focusInput();
+  };
+
+  const onKeyDown = async (e: any) => {
+    if (e.code === "Backspace" && content === "") {
+      e.preventDefault();
+      focusEndOfDiv(dateData[dateData.length - 1]?.schedule_id);
+    }
+    if (e.code === "ArrowUp") {
+      e.preventDefault();
+      focusEndOfDiv(dateData[dateData.length - 1]?.schedule_id);
+    }
+    if (e.code === "ArrowDown") {
+      e.preventDefault();
+      focusEndOfDiv(dateData[0]?.schedule_id);
+    }
   };
 
   const PlanList = dateData?.map((e, i, m) => (
@@ -88,11 +118,15 @@ function Home() {
       previd={m[i - 1]?.schedule_id}
       datemutate={datemutate}
       monthmutate={monthmutate}
-      setAdd={setAdd}
-      add={add}
       focusInput={focusInput}
+      focusEndOfDiv={focusEndOfDiv}
+      i={i}
     ></Plan>
   ));
+
+  // useEffect(() => {
+  //   focusInput();
+  // }, [dateData]);
 
   return (
     <React.Fragment>
@@ -120,6 +154,7 @@ function Home() {
                   placeholder="내용을 입력하세요"
                   value={content}
                   onChange={setContentValue}
+                  onKeyDown={onKeyDown}
                 />
               </form>
             </PlanInputWrap>

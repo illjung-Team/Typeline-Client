@@ -6,7 +6,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState, useRef, useEffect } from "react";
 import usedivInput from "../../hooks/usedivInput";
 import useSWRMutation from "swr/mutation";
-import axios from "axios";
 import { useSession } from "next-auth/react";
 import { useDayStore } from "../../store/currentday";
 import api from "../../axios";
@@ -18,6 +17,7 @@ const Plan: any = ({
   nextid,
   previd,
   focusInput,
+  focusEndOfDiv,
   i,
 }) => {
   const { data: session }: any = useSession();
@@ -31,6 +31,8 @@ const Plan: any = ({
     setdivValue: setMemoValue,
     reset: resetContent,
   } = usedivInput(data?.memo);
+
+  const [cursor, setCursor] = useState(memo.split("\n").length);
 
   const deletefetcher = async (url, { arg }) =>
     await api
@@ -80,90 +82,49 @@ const Plan: any = ({
     monthmutate();
   };
 
-  function focusEndOfDiv(elementId) {
-    const element: any = document.getElementById(elementId);
-
-    if (element) {
-      element.focus();
-      const length = element.textContent.length;
-      console.log("1");
-      if (element.setSelectionRange) {
-        element.setSelectionRange(length, length);
-        console.log("1");
-      } else if (element.createTextRange) {
-        const range = element.createTextRange();
-        range.collapse(true);
-        range.moveEnd("character", length);
-        range.moveStart("character", length);
-        range.select();
-        console.log("2");
-      }
-    } else {
-      focusInput();
-    }
-  }
-
-  function focusUp() {
-    focusEndOfDiv(previd);
-  }
-  function focusDown() {
-    focusEndOfDiv(nextid);
-  }
-
   const onSubmit = async (e: any) => {
-    // console.log(e.code);
-
-    // if (e.shiftKey && e.key === "Enter") {
-    //   e.preventDefault();
-    //   const div = divRef.current;
-    //   const selection = window.getSelection();
-    //   const range = selection.getRangeAt(0);
-
-    //   // 줄 바꿈 노드(br)를 생성합니다.
-    //   const br = document.createElement("br");
-
-    //   // 캐럿 위치에 줄 바꿈을 삽입합니다.
-    //   range.insertNode(br);
-
-    //   // 줄 바꿈 이후로 캐럿을 이동합니다.
-    //   range.setStartAfter(br);
-    //   range.setEndAfter(br);
-
-    //   // 기존 선택 영역을 제거합니다.
-    //   selection.removeAllRanges();
-
-    //   // 업데이트된 선택 영역을 추가합니다.
-    //   selection.addRange(range);
-
-    //   // input 이벤트를 수동으로 트리거합니다.
-    //   div.dispatchEvent(new Event("input"));
-    // }
-
+    console.log("cursor", cursor);
+    if (
+      e.code === "Backspace" &&
+      (divRef.current.innerHTML === "" || divRef.current.innerHTML === "<br>")
+    ) {
+      e.preventDefault();
+      await deletePlan();
+      focusEndOfDiv(previd);
+    }
     if (e.code === "ArrowUp") {
-      // e.preventDefault();
-      focusUp();
+      if (cursor === 1) {
+        e.preventDefault();
+        focusEndOfDiv(previd);
+      } else {
+        setCursor((i) => i - 1);
+      }
     }
     if (e.code === "ArrowDown") {
-      // e.preventDefault();
-      focusDown();
+      if (cursor === memo.split("\n").length) {
+        e.preventDefault();
+        focusEndOfDiv(nextid);
+      } else {
+        setCursor((i) => i + 1);
+      }
     }
 
     if (e.code === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      console.log("memo", memo);
       memo && (await updatetrigger(data?.schedule_id));
-      // setAdd(true);
       focusInput();
       datemutate();
       monthmutate();
     }
   };
 
-  const handleInput = () => {
+  const handleInput = (e) => {
+    console.log(e);
+
     if (divRef.current) {
       const newMemo = divRef.current.innerHTML;
       setMemoValue(newMemo);
-      console.log(memo);
+      setCursor(newMemo.split("\n").length);
     }
   };
 
@@ -178,10 +139,6 @@ const Plan: any = ({
   //   console.log("focus");
   //   add && focusInput();
   // }, [edit]);
-
-  // useEffect(() => {
-  //   focusEndOfDiv(data?.schedule_id);
-  // }, []);
 
   return (
     <PlanWrap
@@ -214,7 +171,7 @@ const Plan: any = ({
           onKeyDown={onSubmit}
           spellCheck={false}
         >
-          {data?.memo}
+          {data?.memo.split("<br>").join("\n")}
         </div>
       )}
       <div className="iconwrap">
@@ -272,6 +229,7 @@ const PlanWrap = styled.div`
     width: 257px;
     word-break: break-all;
     flex: 1;
+    white-space: pre-wrap;
   }
   .done {
     margin-top: 2px;
