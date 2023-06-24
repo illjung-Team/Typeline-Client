@@ -6,11 +6,11 @@ function createWindow() {
   const win = new BrowserWindow({
     width: 854,
     height: 480,
-    frame: false,
+    frame: true,
     resizable: true,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
-      nodeIntegration: true,
+      nodeIntegration: false,
       contextIsolation: false,
     },
   });
@@ -23,15 +23,12 @@ function createWindow() {
     win.close();
   });
 
-  // const url = "http://localhost:3000";
-
-  // win.loadURL(url);
-
-  // main.js 파일이 있는 디렉토리의 정적 파일에 접근하기 위해 path 모듈을 사용하여 절대 경로를 생성합니다.
-  const filePath = path.join(__dirname, "static", "index.html");
+  const url = isDev
+    ? "http://localhost:3000"
+    : `file://${path.join(__dirname, "../out/index.html")}`;
 
   // 정적 파일을 로드합니다.
-  mainWindow.loadFile(filePath);
+  win.loadURL("https://www.naver.com/");
 }
 
 app.whenReady().then(() => {

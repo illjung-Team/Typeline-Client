@@ -31,6 +31,7 @@ module.exports = {
     {
       name: "@electron-forge/publisher-github",
       config: {
+        authToken: "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",
         repository: {
           owner: "illjung-Team",
           name: "Typeline-Client",
