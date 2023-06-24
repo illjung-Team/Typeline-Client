@@ -27,18 +27,18 @@ export const authOptions: NextAuthOptions = {
         console.log(error);
       }
     },
-    session: async ({ session, token }: any) => {
-      if (session?.user) {
-        session.user.id = token.uid;
-      }
-      return session;
-    },
-    jwt: async ({ user, token }) => {
-      if (user) {
-        token.uid = user.id;
-      }
-      return token;
-    },
+    // session: async ({ session, token }: any) => {
+    //   if (session?.user) {
+    //     session.user.id = token.uid;
+    //   }
+    //   return session;
+    // },
+    // jwt: async ({ user, token }) => {
+    //   if (user) {
+    //     token.uid = user.id;
+    //   }
+    //   return token;
+    // },
   },
   session: {
     strategy: "jwt",
