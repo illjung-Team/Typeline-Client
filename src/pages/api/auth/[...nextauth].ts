@@ -5,11 +5,12 @@ import { useRouter } from "next/router";
 import api from "../../../axios";
 
 export const authOptions: NextAuthOptions = {
-  secret: process.env.SECRET,
+  secret: "b7cae8dcb0fb3e997e75ac804d01c492",
   providers: [
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      clientId:
+        "249263652098-3uqunp8nck6c7cot7me7n9t6u8048j3k.apps.googleusercontent.com",
+      clientSecret: "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",
     }),
   ],
   callbacks: {
