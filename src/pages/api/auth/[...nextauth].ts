@@ -5,7 +5,7 @@ import { useRouter } from "next/router";
 import api from "../../../axios";
 
 export const authOptions: NextAuthOptions = {
-  secret: process.env.SECRET,
+  secret: process.env.NEXTAUTH_SECRET,
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
@@ -23,7 +23,6 @@ export const authOptions: NextAuthOptions = {
         });
         return true;
       } catch (error: any) {
-        console.log(error);
         if (error.response.status === 400) {
           return true;
         }
