@@ -16,7 +16,7 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async signIn({ user }): Promise<boolean | string> {
       try {
-        api.post(`user`, {
+        await api.post(`user`, {
           user_id: user.id,
           username: user.name,
           image: user.image,
