@@ -28,7 +28,7 @@ function createWindow() {
     : `file://${path.join(__dirname, "../out/index.html")}`;
 
   // 정적 파일을 로드합니다.
-  win.loadURL("https://www.naver.com/");
+  win.loadURL(url);
 }
 
 app.whenReady().then(() => {
