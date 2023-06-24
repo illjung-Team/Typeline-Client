@@ -23,7 +23,12 @@ const Loginpage = () => {
       ) : (
         <>
           <Title>TYPELINE</Title>
-          <GoogleAuth onClick={handleSignup}>
+          <GoogleAuth
+            onClick={(e) => {
+              e.preventDefault();
+              handleSignup();
+            }}
+          >
             <Image src="/images/google.svg" width={18} height={18}></Image>
             <span>Google로 로그인</span>
           </GoogleAuth>

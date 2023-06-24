@@ -24,24 +24,27 @@ export const authOptions: NextAuthOptions = {
         return true;
       } catch (error: any) {
         console.log(error);
+        if (error.response.status === 400) {
+          return true;
+        }
       }
     },
-    // session: async ({ session, token }: any) => {
-    //   if (session?.user) {
-    //     session.user.id = token.uid;
-    //   }
-    //   return session;
-    // },
-    // jwt: async ({ user, token }) => {
-    //   if (user) {
-    //     token.uid = user.id;
-    //   }
-    //   return token;
-    // },
+    session: async ({ session, token }: any) => {
+      if (session?.user) {
+        session.user.id = token.uid;
+      }
+      return session;
+    },
+    jwt: async ({ user, token }) => {
+      if (user) {
+        token.uid = user.id;
+      }
+      return token;
+    },
   },
-  // session: {
-  //   strategy: "jwt",
-  // },
+  session: {
+    strategy: "jwt",
+  },
 };
 
 export default NextAuth(authOptions);
