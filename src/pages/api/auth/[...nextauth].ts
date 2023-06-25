@@ -29,6 +29,8 @@ export const authOptions: NextAuthOptions = {
       }
     },
     session: async ({ session, token }: any) => {
+      console.log("session2", session);
+
       if (session?.user) {
         session.user.id = token.uid;
       }
