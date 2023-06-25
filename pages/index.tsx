@@ -1,13 +1,18 @@
-import Layout from "../components/layout"
+import Layout from "../components/layout";
+import { signOut } from "next-auth/react";
+import styled from "styled-components";
 
-export default function IndexPage() {
+export default function Home() {
   return (
     <Layout>
       <h1>NextAuth.js Example</h1>
-      <p>
-        This is an example site to demonstrate how to use{" "}
-        <a href="https://next-auth.js.org">NextAuth.js</a> for authentication.
-      </p>
+      <button
+        onClick={(e) => {
+          signOut();
+        }}
+      >
+        로그아웃
+      </button>
     </Layout>
-  )
+  );
 }
