@@ -12,7 +12,7 @@ export default function App({
   Component,
   pageProps: { session, ...pageProps },
 }: any) {
-  useEffect(() => {}, []);
+  console.log("session", session);
 
   return (
     <SessionProvider session={session}>
