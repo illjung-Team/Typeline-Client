@@ -16,9 +16,9 @@ function Home() {
   const weekdays = ["일", "월", "화", "수", "목", "금", "토"];
   const { data: session }: any = useSession();
   const [add, setAdd] = useState(true);
-  const inputRef: any = useRef(null);
+  const inputRef = useRef(null);
 
-  const getdayfetcher = (url: any) =>
+  const getdayfetcher = (url) =>
     api
       .get(url, {
         params: getdayparams(),
@@ -29,7 +29,7 @@ function Home() {
       .then((res: any) => res.data)
       .catch((error) => error.response.status === 404 && []);
 
-  const getmonthfetcher = (url: any) => {
+  const getmonthfetcher = (url) => {
     api.get(url).then((res) => res.data);
   };
 
@@ -51,7 +51,7 @@ function Home() {
     reset: resetContent,
   } = useInput("");
 
-  const postfetcher = async (body: any) =>
+  const postfetcher = async (body) =>
     api.post(`schedule`, body).then((res) => {
       console.log(res.data);
     });
@@ -60,8 +60,8 @@ function Home() {
     inputRef.current.focus();
   };
 
-  function focusEndOfDiv(elementId: any) {
-    const element: any = document.getElementById(elementId);
+  function focusEndOfDiv(elementId) {
+    const element: HTMLElement = document.getElementById(elementId);
     if (element) {
       element?.focus();
       const selection = window.getSelection();
@@ -110,7 +110,7 @@ function Home() {
     }
   };
 
-  const PlanList = dateData?.map((e: any, i: any, m: any) => (
+  const PlanList = dateData?.map((e, i, m) => (
     <Plan
       data={e}
       key={i}
