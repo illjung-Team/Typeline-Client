@@ -27,7 +27,7 @@ const Calendarbox: any = () => {
     inputElement?.focus();
   }
 
-  const getmonthfetcher = (url) =>
+  const getmonthfetcher = (url: any) =>
     api
       .get(url, {
         params: getmonthparams(),
@@ -38,7 +38,7 @@ const Calendarbox: any = () => {
       .then((res) => res.data)
       .catch((error) => error.response.status === 404 && []);
 
-  const getdayfetcher = async (url) =>
+  const getdayfetcher = async (url: any) =>
     await api.get(url).then((res) => res.data);
 
   const {
@@ -50,16 +50,16 @@ const Calendarbox: any = () => {
 
   const { trigger: daymutate } = useSWRMutation(`schedule/day`, getdayfetcher);
 
-  const onActiveStartDateChange = (data) => {
+  const onActiveStartDateChange = (data: any) => {
     monthChange(data.activeStartDate);
     monthmutate();
   };
 
-  const onViewChange = (data) => {
+  const onViewChange = (data: any) => {
     setView(data.view);
   };
 
-  const navigationLabel = ({ date, label, locale, view }) => {
+  const navigationLabel = ({ date, label, locale, view }: any) => {
     const year = date.getFullYear();
     const month = date.getMonth();
     switch (view) {
@@ -80,7 +80,7 @@ const Calendarbox: any = () => {
     return <div>1</div>;
   };
 
-  const formatDay: any = (locale, date) => {
+  const formatDay: any = (locale: any, date: any) => {
     if (
       date.getFullYear() === new Date().getFullYear() &&
       date.getDate() === new Date().getDate() &&
@@ -112,7 +112,7 @@ const Calendarbox: any = () => {
     );
   };
 
-  const tileContent: any = ({ date, view }) => {
+  const tileContent: any = ({ date, view }: any) => {
     const tileinfo = () => {
       return {
         yyyy: String(date.getFullYear()),
@@ -120,7 +120,7 @@ const Calendarbox: any = () => {
         dd: String(date.getDate()),
       };
     };
-    const List = monthData?.map((e) => {
+    const List = monthData?.map((e: any) => {
       if (
         tileinfo().yyyy == e.yyyy &&
         tileinfo().mm == e.mm &&

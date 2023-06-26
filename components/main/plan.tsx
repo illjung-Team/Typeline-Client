@@ -19,12 +19,12 @@ const Plan: any = ({
   focusInput,
   focusEndOfDiv,
   i,
-}) => {
+}: any) => {
   const { data: session }: any = useSession();
   const { selectedDay, getdayparams } = useDayStore();
   const [icon, setIcon] = useState(false);
 
-  const divRef = useRef(null);
+  const divRef: any = useRef(null);
 
   const {
     value: memo,
@@ -34,7 +34,7 @@ const Plan: any = ({
 
   const [cursor, setCursor] = useState(memo.split("\n").length);
 
-  const deletefetcher = async (url, { arg }) =>
+  const deletefetcher = async (url: any, { arg }: any) =>
     await api
       .delete(url, {
         data: {
@@ -44,7 +44,7 @@ const Plan: any = ({
       })
       .then((res) => res.data);
 
-  const updatefetcher = async (url, { arg }) => {
+  const updatefetcher = async (url: any, { arg }: any) => {
     console.log(arg, memo);
     await api
       .patch(url, {
@@ -54,7 +54,7 @@ const Plan: any = ({
       })
       .then((res) => res.data);
   };
-  const updatetodofetcher = async (url, { arg }) => {
+  const updatetodofetcher = async (url: any, { arg }: any) => {
     await api
       .patch(url, {
         schedule_id: arg,
@@ -118,9 +118,7 @@ const Plan: any = ({
     }
   };
 
-  const handleInput = (e) => {
-    console.log(e);
-
+  const handleInput = (e: any) => {
     if (divRef.current) {
       const newMemo = divRef.current.innerHTML;
       setMemoValue(newMemo);

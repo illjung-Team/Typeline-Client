@@ -4,7 +4,7 @@ import GoogleProvider from "next-auth/providers/google";
 import { useRouter } from "next/router";
 import api from "../../../axios";
 
-export const authOptions: NextAuthOptions = {
+export const authOptions = {
   secret: process.env.SECRET,
   providers: [
     GoogleProvider({
@@ -13,7 +13,7 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async signIn({ user }): Promise<boolean | string> {
+    async signIn({ user }) {
       try {
         await api.post(`user`, {
           user_id: user.id,
@@ -22,13 +22,13 @@ export const authOptions: NextAuthOptions = {
           email: user.email,
         });
         return true;
-      } catch (error: any) {
+      } catch (error) {
         if (error.response.status === 400) {
           return true;
         }
       }
     },
-    session: async ({ session, token }: any) => {
+    session: async ({ session, token }) => {
       console.log("session2", session);
 
       if (session?.user) {
