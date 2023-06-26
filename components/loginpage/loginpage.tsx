@@ -29,7 +29,12 @@ const Loginpage = () => {
               handleSignup();
             }}
           >
-            {/* <Image src="/images/google.svg" width={18} height={18}></Image> */}
+            <Image
+              src="/images/google.svg"
+              width={18}
+              height={18}
+              alt="Picture of the author"
+            ></Image>
             <span>Google로 로그인</span>
           </GoogleAuth>
         </>
