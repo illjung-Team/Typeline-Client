@@ -1,0 +1,131 @@
+/* Fonts */
+@import url("fonts.css");
+
+/* Reset */
+@import url("reset.css");
+
+/* Global CSS Settings */
+html,
+body,
+body * {
+  font-family: "Pretendard Variable", sans-serif;
+  user-select: none;
+  scroll-behavior: smooth;
+}
+
+img {
+  -webkit-user-drag: none;
+}
+
+.font-pretendard,
+.font-pretendard * {
+  font-family: "Pretendard Variable", sans-serif !important;
+}
+
+.font-suit,
+.font-suit * {
+  font-family: "SUIT Variable", "Pretendard Variable", sans-serif !important;
+}
+
+.font-goyang,
+.font-goyang * {
+  font-family: "GoyangDeogyang", "SUIT Variable", "Pretendard Variable",
+    sans-serif !important;
+}
+
+/* Scrollbars */
+section::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+section::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background-color: #666666;
+}
+
+ul::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+ul::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background-color: #666666;
+}
+
+div::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+div::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background-color: #666666;
+}
+
+/* Loading spinner */
+.loaderWrapper {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+}
+
+.spinner {
+  display: inline-block;
+  width: 34px;
+  height: 34px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  text-indent: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  background-color: transparent !important;
+  background-repeat: no-repeat;
+  background-position: 50%;
+  background-image: url("data:image/png;base64,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");
+  background-size: 34px 34px;
+  animation: spinner 1s linear infinite;
+  cursor: default;
+}
+input {
+  border-radius: 4px;
+  box-shadow: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  -o-appearance: none;
+  appearance: none;
+  border: none;
+  font-family: "Pretendard";
+  font-size: 16px;
+  padding: 0;
+}
+
+input:focus {
+  outline: none;
+}
+div:focus {
+  outline: none;
+}
+
+select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  border: none;
+}
+
+input,
+textarea,
+select {
+  font-family: inherit;
+}
+
+@keyframes spinner {
+  to {
+    transform: rotate(1turn);
+  }
+}

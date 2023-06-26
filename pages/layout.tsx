@@ -1,5 +1,7 @@
+import Calendarbox from "../components/calendar/calendar";
 import styled from "styled-components";
-import Loginpage from "../pages/login";
+import Header from "../components/header";
+import Loginpage from "../components/loginpage/loginpage";
 import { useSession } from "next-auth/react";
 
 const Layout = ({ children }: any) => {
@@ -7,8 +9,12 @@ const Layout = ({ children }: any) => {
 
   return (
     <>
+      <Header></Header>
       {status === "authenticated" ? (
-        <LayoutWrap>{children}</LayoutWrap>
+        <LayoutWrap>
+          <Calendarbox></Calendarbox>
+          {children}
+        </LayoutWrap>
       ) : (
         <Loginpage />
       )}
