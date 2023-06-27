@@ -4,7 +4,7 @@ import styled from "styled-components";
 import { useDayStore } from "../store/currentday";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import useInput from "../hooks/useInput";
-import { fa0, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import Plan from "../components/main/plan";
 import useSWR, { mutate } from "swr";
 import { useSession } from "next-auth/react";
@@ -84,16 +84,70 @@ function Home() {
     if (content === "") {
       return;
     }
-    await postfetcher({
-      ...getdayparams(),
-      user_id: session.user.id,
-      memo: content,
-    });
-    datemutate();
+    await addPlan();
+    // datemutate();
     monthmutate();
+  };
+
+  const addPlan = async () => {
+    datemutate(async (data: any) => {
+      const updatedTodos = [
+        ...data,
+        {
+          schedule_id: null,
+          ...getdayparams(),
+          user_id: session.user.id,
+          memo: content,
+          status: false,
+        },
+      ];
+      return updatedTodos;
+    }, false);
     resetContent();
     focusInput();
+    try {
+      await postfetcher({
+        ...getdayparams(),
+        user_id: session.user.id,
+        memo: content,
+      });
+      datemutate();
+      // setTimeout(() => {}, 1000);
+    } catch (error) {
+      console.error("plan 업데이트 실패:", error);
+      datemutate();
+    }
   };
+
+  // const updateMonth = async () => {
+  //   datemutate(async (data: any) => {
+  //     const updatedTodos = [
+  //       ...data,
+  //       {
+  //         schedule_id: null,
+  //         ...getdayparams(),
+  //         user_id: session.user.id,
+  //         memo: content,
+  //         status: false,
+  //       },
+  //     ];
+  //     return updatedTodos;
+  //   }, false);
+  //   resetContent();
+  //   focusInput();
+  //   try {
+  //     await postfetcher({
+  //       ...getdayparams(),
+  //       user_id: session.user.id,
+  //       memo: content,
+  //     });
+  //     datemutate();
+  //     // setTimeout(() => {}, 1000);
+  //   } catch (error) {
+  //     console.error("plan 업데이트 실패:", error);
+  //     datemutate();
+  //   }
+  // };
 
   const onKeyDown = async (e: any) => {
     if (e.code === "Backspace" && content === "") {
@@ -123,10 +177,6 @@ function Home() {
       i={i}
     ></Plan>
   ));
-
-  // useEffect(() => {
-  //   focusInput();
-  // }, [dateData]);
 
   return (
     <React.Fragment>

@@ -6,9 +6,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 
 const Loginpage = () => {
-  const { data: session, status }: any = useSession();
-
-  const router = useRouter();
+  const { status }: any = useSession();
 
   const handleSignup = async () => {
     await signIn("google");
