@@ -14,6 +14,7 @@ import {
   faSortDown,
 } from "@fortawesome/free-solid-svg-icons";
 import api from "../../axios";
+import { mutate } from "swr";
 
 const Calendarbox: any = () => {
   const { data: session }: any = useSession();
@@ -29,7 +30,7 @@ const Calendarbox: any = () => {
 
   const getmonthfetcher = (url: any) =>
     api
-      .get(url, {
+      .get(`schedule/month`, {
         params: getmonthparams(),
         data: {
           user_id: session.user.id,
@@ -38,17 +39,12 @@ const Calendarbox: any = () => {
       .then((res) => res.data)
       .catch((error) => error.response.status === 404 && []);
 
-  const getdayfetcher = async (url: any) =>
-    await api.get(url).then((res) => res.data);
-
   const {
     data: monthData,
     error: monthDataError,
     isLoading: monthDataIsLoading,
     mutate: monthmutate,
-  } = useSWR(`schedule/month`, getmonthfetcher);
-
-  const { trigger: daymutate } = useSWRMutation(`schedule/day`, getdayfetcher);
+  } = useSWR(`month`, getmonthfetcher);
 
   const onActiveStartDateChange = (data: any) => {
     monthChange(data.activeStartDate);
@@ -144,14 +140,14 @@ const Calendarbox: any = () => {
 
   const onClickDay = (date: Date) => {
     dayChange(date);
-    daymutate();
+    mutate("day");
     focusInput();
     router.push("/");
   };
 
   const goToday: any = (date: Date) => {
     dayChange(new Date());
-    daymutate();
+    mutate("day");
     router.push("/");
   };
 

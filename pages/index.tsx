@@ -20,7 +20,7 @@ function Home() {
 
   const getdayfetcher = (url: any) =>
     api
-      .get(url, {
+      .get(`schedule/day`, {
         params: getdayparams(),
         data: {
           user_id: session.user.id,
@@ -38,12 +38,9 @@ function Home() {
     error: dateDataError,
     isLoading: dateDataIsLoading,
     mutate: datemutate,
-  } = useSWR(`schedule/day`, getdayfetcher);
+  } = useSWR(`day`, getdayfetcher);
 
-  const { trigger: monthmutate } = useSWRMutation(
-    `schedule/month`,
-    getmonthfetcher
-  );
+  const { trigger: monthmutate } = useSWRMutation(`month`, getmonthfetcher);
 
   const {
     value: content,
@@ -55,6 +52,16 @@ function Home() {
     api.post(`schedule`, body).then((res) => {
       console.log(res.data);
     });
+  // const postfetcher = async () =>
+  //   api
+  //     .post(`schedule`, {
+  //       ...getdayparams(),
+  //       user_id: session.user.id,
+  //       memo: content,
+  //     })
+  //     .then((res) => {
+  //       console.log(res.data);
+  //     });
 
   const focusInput = () => {
     inputRef.current.focus();
@@ -77,19 +84,13 @@ function Home() {
 
   const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    onAdd();
-  };
-
-  const onAdd = async () => {
-    if (content === "") {
-      return;
-    }
-    await addPlan();
-    // datemutate();
-    monthmutate();
+    addPlan();
   };
 
   const addPlan = async () => {
+    if (content === "") {
+      return;
+    }
     datemutate(async (data: any) => {
       const updatedTodos = [
         ...data,
@@ -103,6 +104,23 @@ function Home() {
       ];
       return updatedTodos;
     }, false);
+    mutate(
+      "month",
+      async (data: any) => {
+        const updatedTodos = [
+          ...data,
+          {
+            schedule_id: null,
+            ...getdayparams(),
+            user_id: session.user.id,
+            memo: content,
+            status: false,
+          },
+        ];
+        return updatedTodos;
+      },
+      false
+    );
     resetContent();
     focusInput();
     try {
@@ -112,12 +130,42 @@ function Home() {
         memo: content,
       });
       datemutate();
-      // setTimeout(() => {}, 1000);
+      mutate("month");
     } catch (error) {
       console.error("plan 업데이트 실패:", error);
       datemutate();
+      mutate("month");
     }
   };
+
+  // const addPlan = async () => {
+  //   if (content === "") {
+  //     return;
+  //   }
+  //   datemutate(postfetcher, {
+  //     optimisticData: (beforedata: any) => {
+  //       const updatedTodos = [
+  //         ...beforedata,
+  //         {
+  //           schedule_id: null,
+  //           ...getdayparams(),
+  //           user_id: session.user.id,
+  //           memo: content,
+  //           status: false,
+  //         },
+  //       ];
+  //       return updatedTodos;
+  //     },
+  //   });
+  //   resetContent();
+  //   focusInput();
+  //   monthmutate();
+  //   // try {
+  //   // } catch (error) {
+  //   //   console.error("plan 업데이트 실패:", error);
+  //   //   monthmutate();
+  //   // }
+  // };
 
   // const updateMonth = async () => {
   //   datemutate(async (data: any) => {
@@ -210,7 +258,7 @@ function Home() {
             </PlanInputWrap>
           )}
           {content && (
-            <PlanPlusWrap color="#AAAAAA" onClick={onAdd}>
+            <PlanPlusWrap color="#AAAAAA" onClick={addPlan}>
               <div className="icon">
                 <FontAwesomeIcon icon={faPlus} />
               </div>

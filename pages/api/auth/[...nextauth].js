@@ -27,8 +27,6 @@ export const authOptions = {
       }
     },
     session: async ({ session, token }) => {
-      console.log("session2", session);
-
       if (session?.user) {
         session.user.id = token.uid;
       }
