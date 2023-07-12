@@ -1,13 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // output: "export",
-  reactStrictMode: true,
   // exportPathMap: async function () {
-  //   return {
-  //     "/": { page: "/" },
-  //   };
-  // },
-  images: {
+    //   return {
+      //     "/": { page: "/" },
+      //   };
+      // },
+      reactStrictMode: true,
+      images: {
     unoptimized: true,
   },
   compiler: {

@@ -189,8 +189,6 @@ const Plan: any = ({
       e.preventDefault();
       memo && updatePlan();
       focusInput();
-      // datemutate();
-      // monthmutate();
     }
   };
 
@@ -208,11 +206,6 @@ const Plan: any = ({
       // divRef.current.focus();
     }
   }, []);
-
-  // useEffect(() => {
-  //   console.log("focus");
-  //   add && focusInput();
-  // }, [edit]);
 
   return (
     <PlanWrap
@@ -232,7 +225,7 @@ const Plan: any = ({
       )}
       {data?.status ? (
         <div className="done" spellCheck={false}>
-          {data?.memo}
+          {data?.memo.split("<br>").join("\n")}{" "}
         </div>
       ) : (
         <div

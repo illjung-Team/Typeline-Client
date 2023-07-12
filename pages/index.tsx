@@ -21,10 +21,7 @@ function Home() {
   const getdayfetcher = (url: any) =>
     api
       .get(`schedule/day`, {
-        params: getdayparams(),
-        data: {
-          user_id: session.user.id,
-        },
+        params: { ...getdayparams(), userId: session.user.id },
       })
       .then((res: any) => res.data)
       .catch((error) => error.response.status === 404 && []);

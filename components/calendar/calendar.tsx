@@ -6,7 +6,6 @@ import { useRouter } from "next/router";
 import { useDayStore } from "../../store/currentday";
 import { useMonthStore } from "../../store/currentmonth";
 import useSWR from "swr";
-import useSWRMutation from "swr/mutation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faAngleRight,
@@ -27,14 +26,10 @@ const Calendarbox: any = () => {
     let inputElement = document.getElementById("input");
     inputElement?.focus();
   }
-
-  const getmonthfetcher = (url: any) =>
+  const getmonthfetcher = () =>
     api
       .get(`schedule/month`, {
-        params: getmonthparams(),
-        data: {
-          user_id: session.user.id,
-        },
+        params: { ...getmonthparams(), userId: session.user.id },
       })
       .then((res) => res.data)
       .catch((error) => error.response.status === 404 && []);
@@ -67,13 +62,30 @@ const Calendarbox: any = () => {
           </Label>
         );
       case "year":
-        return <Label>{`${year}년`}</Label>;
+        return (
+          <Label>
+            {`${year}년`}
+            <Drop icon={faSortDown}></Drop>
+          </Label>
+        );
       case "decade":
-        return <Label>{`${Math.floor(year / 10) * 10}년대`}</Label>;
+        return (
+          <Label>
+            {`${Math.floor(year / 10) * 10}년대`}
+            <Drop icon={faSortDown}></Drop>
+          </Label>
+        );
       case "century":
         return <Label>{`${Math.floor(year / 100) + 1}세기`}</Label>;
     }
-    return <div>1</div>;
+  };
+
+  const formatShortWeekday = (locale: any, date: any) => {
+    const weekdays = ["일", "월", "화", "수", "목", "금", "토"];
+    // if (date.getDay() === 0) {
+    //   return <div></div>;
+    // }
+    return weekdays[date.getDay()];
   };
 
   const formatDay: any = (locale: any, date: any) => {
@@ -90,7 +102,7 @@ const Calendarbox: any = () => {
         </Todaytile>
       );
     }
-    if (date.getDay() === 6 || date.getDay() === 0) {
+    if (date.getDay() === 0) {
       return (
         <Weekendtile className="weekend">
           {date.getDate() === 1
@@ -124,7 +136,12 @@ const Calendarbox: any = () => {
       ) {
         return (
           <Planlist>
-            <p>•</p> <span>{e.memo}</span>
+            <p>•</p>
+            {e.status ? (
+              <span className="isdone">{e.memo}</span>
+            ) : (
+              <span>{e.memo}</span>
+            )}
           </Planlist>
         );
       }
@@ -154,7 +171,7 @@ const Calendarbox: any = () => {
   return (
     <CalendarWrap>
       <Calendar
-        // formatShortWeekday={formatShortWeekday}
+        formatShortWeekday={formatShortWeekday}
         defaultValue={selectedDay}
         // activeStartDate={new Date()}
         navigationLabel={navigationLabel}
@@ -398,6 +415,14 @@ const Planlist = styled.div`
     font-size: 16px;
     margin-bottom: 2px;
   }
+  .isdone {
+    color: #666666;
+    text-decoration-line: line-through;
+  }
+`;
+
+const Sunday = styled.div`
+  color: #ea0000;
 `;
 
 const Gotodaybutton = styled.button`
