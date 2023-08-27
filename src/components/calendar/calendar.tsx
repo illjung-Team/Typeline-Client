@@ -38,15 +38,15 @@ const Calendarbox: any = () => {
       .then((res) => res.data)
       .catch((error) => error.response.status === 404 && []);
 
-  const getdayfetcher = async (url) =>
-    await api.get(url).then((res) => res.data);
-
   const {
     data: monthData,
     error: monthDataError,
     isLoading: monthDataIsLoading,
     mutate: monthmutate,
   } = useSWR(`schedule/month`, getmonthfetcher);
+
+  const getdayfetcher = async (url) =>
+    await api.get(url).then((res) => res.data);
 
   const { trigger: daymutate } = useSWRMutation(`schedule/day`, getdayfetcher);
 
